@@ -1,25 +1,28 @@
 import json
 import os
-import unittest
 
-from sqlalchemy import create_engine
+from flask import Flask
 from faker import Factory
+from flask_testing import TestCase
+from sqlalchemy import create_engine
 
-from app.api import app, auth
+
+from app.api import api, auth
 
 
-class TestUser(unittest.TestCase):
+class TestUser(TestCase):
     """Test user creation and login."""
+
+    def create_app(self):
+        test_app = Flask(__name__)
+        test_app.config["TESTING"] = True
+        return test_app
 
     def setUp(self):
         """Set up testing environment."""
         fake = Factory.create()
         self.username = fake.user_name()
         self.password = fake.password()
-
-        # app.config["TESTING"] = True
-        # self.app = app.test_client()
-        # return self.app
 
     def test_register(self):
         response = self.client.post("/auth/register",
@@ -39,8 +42,8 @@ class TestUser(unittest.TestCase):
         self.assertTrue("Username can't be blank." in response.data)
 
     def test_reg_fails_username_and_password_are_the_same(self):
-        response = self.client.post("/auth/register", data={"username": foo,
-                                                           "password": foo})
+        response = self.client.post("/auth/register", data={"username": "foo",
+                                                           "password": "foo"})
         self.assertEqual(response.status_code, 400)
         self.assertTrue("Username and password can't be the same." in response.data)
 

@@ -2,16 +2,24 @@ import json
 import os
 import unittest
 
-from sqlalchemy import create_engine
+from flask import Flask
+from flask_testing import TestCase
 from faker import Factory
 
-from app.api import app
+from app.api import api
 
 
-class TestApi(unittest.TestCase):
+class TestApi(TestCase):
     """Test crud functions"""
+    def create_app(self):
+        test_app = Flask(__name__)
+        test_app.config["TESTING"] = True
+        return test_app
+
     def setUp(self):
-        pass
+        fakes = Factory.create()
+        username = fakes.user_name()
+        password = fakes.password()
 
     def test_create_bucketlist_after_auth(self):
         response = self.client.post("/bucketlists/", data={})
@@ -38,21 +46,22 @@ class TestApi(unittest.TestCase):
         self.assertIn("You have to log in first", response.data)
 
     def test_get_bucketlist_by_id(self):
-        response = self.client.get("/bucketlists/<id>", data-{})
+        response = self.client.get("/bucketlists/<id>", data={})
         self.assertEqual(response.status_code, 200)
 
     def test_bucketlist_id_is_not_found(self):
-        response = self.client.get("/bucketlists/<id>", data-{})
+        response = self.client.get("/bucketlists/<id>", data={})
         self.assertEqual(response.status_code, 404)
-        self.assertIn("Id not found.", response.data)
+        # self.assertIn("Id not found.", response.data)
 
     def test_update_bucketlist(self):
-        response = self.client.put("/bucketlists/<id>", data-{})
+        response = self.client.put("/bucketlists/<id>", data={})
         self.assertEqual(response.status_code, 201)
         self.assertIn("Updated", response.data)
 
     def test_delete_bucketlist(self):
-        pass
+        response = self.client.delete("/bucketlists/<id>", data={})
+        self.assertEqual(response.status_code, 200)
 
     def test_create_bucketlist_item(self):
         response = self.client.post("/bucketlists/<id>/items/", data={})
@@ -62,7 +71,7 @@ class TestApi(unittest.TestCase):
     def test_create_bucketlist_item_fails_if_id_is_invalid(self):
         response = self.client.post("/bucketlists/<id>/items/", data={})
         self.assertEqual(response.status_code, 404)
-        self.assertIn("The bucketlist ID was not found.")
+        # self.assertIn("The bucketlist ID was not found.", response.data)
 
     def test_create_bucketlist_item_fails_if_name_is_blank(self):
         response = self.client.post("/bucketlists/<id>/items/", data={})
@@ -84,17 +93,13 @@ class TestApi(unittest.TestCase):
         self.assertIn("Deleted", response.data)
 
     def test_get_bucketlist_by_name(self):
-        response = self.client.get()
+        response = self.client.get("/bucketlists/<id>/items/<item_name>", data={})
         self.assertEqual(response.status_code, 200)
 
     def test_it_doesnt_get_bucketlist_name(self):
-        pass
+        response = self.client.get("/bucketlists/<id>/items/<name>", data={})
+        self.assertEqual(response.status_code, 204)
 
-    def test_paginate(self):
-        pass
-
-    def tearDown(self):
-        pass
 
 
 if __name__ == "__main__":
