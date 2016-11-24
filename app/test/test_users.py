@@ -53,9 +53,6 @@ class TestUser(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertTrue("Password cannot be blank!" in response.data)
 
-    def test_reg_fails_if_username_already_exists(self):
-        pass
-
     def test_login_fails_if_username_blank(self):
         response = self.client.post("/auth/login/", data={"password": self.password})
         self.assertEqual(response.status_code, 400)
@@ -69,11 +66,6 @@ class TestUser(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertTrue("Wrong password." in response.data)
 
-    def test_login_fails_if_username_doesnt_exist(self):
-        pass
-
-    def tearDown(self):
-        pass
 
 if __name__ == "__main__":
     unittest.main()
