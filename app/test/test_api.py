@@ -1,36 +1,12 @@
-import json
-import os
-import unittest
-
-from flask import Flask
-from flask_testing import TestCase
-from faker import Factory
-
+from app.test import test_setup
 from app.api import api
 
 
-class TestApi(TestCase):
+class TestApi(test_setup.TestSetUp):
     """Test crud functions"""
-    def create_app(self):
-        test_app = Flask(__name__)
-        test_app.config["TESTING"] = True
-        return test_app
-
-    def setUp(self):
-        fakes = Factory.create()
-        username = fakes.user_name()
-        password = fakes.password()
-        self.client.post("/auth/register",
-                         data=json.dumps({"username": username,
-                                          "password": password}))
-        response = self.client.post("auth/login",
-                                    data=json.dumps({"username": username,
-                                                     "password": password}))
-        token = os.environ["SECRET_KEY"]
-        self.headers = {"Auth": token}
-
 
     def test_create_bucketlist_after_auth(self):
+        # Tests that a bucketlist creates successfully after user is logged in.
         response = self.client.post("/bucketlists/",
                                     headers=self.headers,
                                     data=json.dumps({"name": "listname"}))
@@ -38,13 +14,15 @@ class TestApi(TestCase):
         self.assertTrue("Bucketlist created." in response.data)
 
     def test_fail_create_bucketlist_before_auth(self):
+        # Fails to create a bucketlist if the user is not logged in.
         response = self.client.post("/bucketlists/",
                                     data=json.dumps({"name": "listname"}),
                                     headers={})
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, 403)
         self.assertIn("You have to log in first", response.data)
 
     def test_fail_create_bucketlist_with_blank_name(self):
+        # Test that you cant create a bucketlist without a name.
         response = self.client.post("/bucketlists/",
                                     data=json.dumps({"name": ""}),
                                     headers=self.headers)
@@ -52,24 +30,28 @@ class TestApi(TestCase):
         self.assertIn("The name cannot be blank", response.data)
 
     def test_get_all_bucketlists_after_auth(self):
+        # Gets all bucketlists as long as the user is logged in.
         response = self.client.get("/bucketlists/", headers=self.headers)
         self.assertEqual(response.status_code, 200)
 
     def test_fail_to_get_bucket_lists_before_auth(self):
+        # Fails to get bucketlists if the user is not logged in
         response = self.client.get("/bucketlists/", headers={})
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, 403)
         self.assertIn("You have to log in first", response.data)
 
     def test_get_bucketlist_by_id(self):
+        # Gets bucketlist with a given ID
         response = self.client.get("/bucketlists/1", headers=self.headers)
         self.assertEqual(response.status_code, 200)
 
     def test_bucketlist_id_is_not_found(self):
+        # Returns an error if the bucket list ID is not found.
         response = self.client.get("/bucketlists/105", headers=self.headers)
-        self.assertEqual(response.status_code, 404)
-        # self.assertIn("Id not found.", response.data)
+        self.assertEqual(response.status_code, 204)
 
     def test_update_bucketlist(self):
+        # Updates the bucketlist
         response = self.client.put("/bucketlists/1",
                                    data=json.dumps({"name": "NewName"}),
                                    headers=self.headers)
@@ -77,10 +59,17 @@ class TestApi(TestCase):
         self.assertIn("Updated", response.data)
 
     def test_delete_bucketlist(self):
-        response = self.client.delete("/bucketlists/1", headers=self.headers)
-        self.assertEqual(response.status_code, 200)
+        # Deletes a bucketlist
+        self.client.post("/bucketlists/",
+                                    data=json.dumps({"name": "NewName"}),
+                                    headers=self.headers)
+        self.client.get("/bucketlists/1", headers=self.headers)
+        self.client.delete("/bucketlists/1", headers=self.headers)
+        response = self.client.get("/bucketlists/1", headers=self.headers)
+        self.assertEqual(response.status_code, 204)
 
     def test_create_bucketlist_item(self):
+        # Creates a bucketlist item
         response = self.client.post("/bucketlists/1/items/",
                                     data=json.dumps({"name": "item1"}),
                                     headers=self.headers)
@@ -92,7 +81,6 @@ class TestApi(TestCase):
                                     data=json.dumps({"name": "item2"}),
                                     headers=self.headers)
         self.assertEqual(response.status_code, 404)
-        # self.assertIn("The bucketlist ID was not found.", response.data)
 
     def test_create_bucketlist_item_fails_if_name_is_blank(self):
         response = self.client.post("/bucketlists/1/items/",

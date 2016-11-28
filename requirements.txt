@@ -1,4 +1,5 @@
 aniso8601==1.2.0
+clang==3.8
 click==6.6
 coverage==4.2
 coveralls==1.1
@@ -7,6 +8,7 @@ fake-factory==0.7.2
 Flask==0.11.1
 Flask-RESTful==0.3.5
 Flask-SQLAlchemy==2.1
+Flask-Testing==0.6.1
 itsdangerous==0.24
 Jinja2==2.8
 MarkupSafe==0.23

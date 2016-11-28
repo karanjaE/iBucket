@@ -6,3 +6,4 @@ omit =
   *docopt.py*
   *docopt*
   *__init__*
+  .env
