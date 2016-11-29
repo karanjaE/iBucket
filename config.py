@@ -2,7 +2,7 @@ import os
 base_dir = os.path.abspath(os.path.dirname(__file__))
 
 WTF_CSRF_ENABLED = True
-SECRET_KEY = "iwonttell"
+SECRET_KEY = os.environ["SECRET_KEY"]
 
 
 class Config:
