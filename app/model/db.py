@@ -45,6 +45,8 @@ class User(BaseModel):
 
 
 class Bucket(BaseModel):
+    """It creates the buckets table"""
+
     __tablename__ = "buckets"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     bucket_name = db.Column(db.String(200), nullable=False)
@@ -56,6 +58,8 @@ class Bucket(BaseModel):
 
 
 class Item(BaseModel):
+    """It creates the items table"""
+    
     __tablename__ = "items"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     item_name = db.Column(db.String(200), nullable=False)
