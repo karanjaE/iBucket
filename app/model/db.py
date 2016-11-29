@@ -26,23 +26,14 @@ class User(BaseModel):
     """It defines the users table"""
 
     __tablename__ = "users"
-    id = db.Column(db.Integer, primary_key=True, default=111000,
-                   autoincrement=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(200), nullable=False, unique=True,
                          index=True)
-    email = db.Column(db.String(200), nullable=False, unique=True)
     password = db.Column(db.String(200), nullable=False)
     first_name = db.Column(db.String(200), nullable=False)
     last_name = db.Column(db.String(200), nullable=False)
-
-    def hash_password(self, password):
-        """Hashes out passwords before persisting to the db"""
-        self.password_hash = pwd_ctx.encrypt(password)
-
-    def verify_password(self, password):
-        """Hashes password at login for verification"""
-        return pwd_ctx.verify(password, self.password_hash)
-
+    bucket = db.relationship("Bucket", backref="users", lazy="dynamic",
+                             cascade="all, delete-orphan")
 
 class Bucket(BaseModel):
     """It creates the buckets table"""
@@ -54,12 +45,13 @@ class Bucket(BaseModel):
     date_modified = db.Column(db.DateTime(), default=db.func.now(),
                               onupdate=db.func.now())
     created_by = db.Column(db.Integer, db.ForeignKey("users.id"))
-    items = db.relationship("Item", backref="bucket")
+    items = db.relationship("Item", backref="buckets",lazy="dynamic",
+                            cascade="all, delete-orphan")
 
 
 class Item(BaseModel):
     """It creates the items table"""
-    
+
     __tablename__ = "items"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     item_name = db.Column(db.String(200), nullable=False)

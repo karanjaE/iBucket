@@ -19,10 +19,10 @@ class TestSetUp(TestCase):
         self.username = fake.user_name()
         self.password = fake.password()
         self.client.post("/auth/register",
-                         data=json.dumps({"username": username,
-                                          "password": password}))
+                         data=json.dumps({"username": self.username,
+                                          "password": self.password}))
         response = self.client.post("auth/login",
-                                    data=json.dumps({"username": username,
-                                                     "password": password}))
+                                    data=json.dumps({"username": self.username,
+                                                     "password": self.password}))
         token = os.environ["SECRET_KEY"]
         self.headers = {"Auth": token}

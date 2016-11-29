@@ -45,7 +45,7 @@ class TestUser(test_setup.TestSetUp):
     def test_login_fails_if_password_is_blank(self):
         # Fails to log in user if the password is blank.
         response = self.client.post("/auth/login",
-                                    data=json.dumps({"username": self.username,
+                                    data=({"username": self.username,
                                                      "password": ""}))
         self.assertEqual(response.status_code, 204)
         self.assertIn("Password cannot be blank.", response.data)

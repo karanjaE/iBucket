@@ -9,14 +9,14 @@ class TestApi(test_setup.TestSetUp):
         # Tests that a bucketlist creates successfully after user is logged in.
         response = self.client.post("/bucketlists/",
                                     headers=self.headers,
-                                    data=json.dumps({"name": "listname"}))
+                                     data=({"name": "listname"}))
         self.assertEqual(response.status_code, 201)
         self.assertTrue("Bucketlist created." in response.data)
 
     def test_fail_create_bucketlist_before_auth(self):
         # Fails to create a bucketlist if the user is not logged in.
         response = self.client.post("/bucketlists/",
-                                    data=json.dumps({"name": "listname"}),
+                                     data=({"name": "listname"}),
                                     headers={})
         self.assertEqual(response.status_code, 403)
         self.assertIn("You have to log in first", response.data)
@@ -24,7 +24,7 @@ class TestApi(test_setup.TestSetUp):
     def test_fail_create_bucketlist_with_blank_name(self):
         # Test that you cant create a bucketlist without a name.
         response = self.client.post("/bucketlists/",
-                                    data=json.dumps({"name": ""}),
+                                     data=({"name": ""}),
                                     headers=self.headers)
         self.assertEqual(response.status_code, 400)
         self.assertIn("The name cannot be blank", response.data)
@@ -53,7 +53,7 @@ class TestApi(test_setup.TestSetUp):
     def test_update_bucketlist(self):
         # Updates the bucketlist
         response = self.client.put("/bucketlists/1",
-                                   data=json.dumps({"name": "NewName"}),
+                                    data=({"name": "NewName"}),
                                    headers=self.headers)
         self.assertEqual(response.status_code, 201)
         self.assertIn("Updated", response.data)
@@ -61,7 +61,7 @@ class TestApi(test_setup.TestSetUp):
     def test_delete_bucketlist(self):
         # Deletes a bucketlist
         self.client.post("/bucketlists/",
-                                    data=json.dumps({"name": "NewName"}),
+                                     data=({"name": "NewName"}),
                                     headers=self.headers)
         self.client.get("/bucketlists/1", headers=self.headers)
         self.client.delete("/bucketlists/1", headers=self.headers)
@@ -71,20 +71,20 @@ class TestApi(test_setup.TestSetUp):
     def test_create_bucketlist_item(self):
         # Creates a bucketlist item
         response = self.client.post("/bucketlists/1/items/",
-                                    data=json.dumps({"name": "item1"}),
+                                     data=({"name": "item1"}),
                                     headers=self.headers)
         self.assertEqual(response.status_code, 201)
         self.assertIn("Bucketlist item created.", response.data)
 
     def test_create_bucketlist_item_fails_if_id_is_invalid(self):
         response = self.client.post("/bucketlists/105/items/",
-                                    data=json.dumps({"name": "item2"}),
+                                     data=({"name": "item2"}),
                                     headers=self.headers)
         self.assertEqual(response.status_code, 404)
 
     def test_create_bucketlist_item_fails_if_name_is_blank(self):
         response = self.client.post("/bucketlists/1/items/",
-                                    data=json.dumps({"name": ""}),
+                                     data=({"name": ""}),
                                     headers=self.headers)
         self.assertEqual(response.status_code, 400)
         self.assertIn("Item name cannot be blank.", response.data)
@@ -96,7 +96,7 @@ class TestApi(test_setup.TestSetUp):
 
     def test_update_bucketlist_item(self):
         response = self.client.put("/bucketlists/1/items/1",
-                                   data=json.dumps({"name": "NewName"}),
+                                    data=({"name": "NewName"}),
                                    headers=self.headers)
         self.assertEqual(response.status_code, 200)
         self.assertIn("Item updated", response.data)
