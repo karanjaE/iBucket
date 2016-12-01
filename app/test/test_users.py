@@ -1,3 +1,4 @@
+from app import app
 from app.test import test_setup
 from app.api import auth
 

@@ -57,6 +57,7 @@ class Item(BaseModel):
     __tablename__ = "items"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     item_name = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.String(250), nullable=True)
     bucket = db.Column(db.Integer, db.ForeignKey("buckets.id"))
     date_created = db.Column(db.DateTime(), default=db.func.now())
     date_modified = db.Column(db.DateTime(), default=db.func.now(),
