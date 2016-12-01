@@ -21,3 +21,4 @@ from app.api import auth
 
 blapi.add_resource(api.Index, "/index", "/")
 blapi.add_resource(auth.RegisterUser, "/auth/register")
+blapi.add_resource(auth.LoginUser, "/auth/login")
