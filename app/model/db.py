@@ -1,4 +1,5 @@
-from passlib.apps import custom_app_context as pwd_ctx
+from itsdangerous import (TimedJSONWebSignatureSerializer as Serializer,
+                          BadSignature, SignatureExpired)
 
 from app import db
 
@@ -34,6 +35,7 @@ class User(BaseModel):
     last_name = db.Column(db.String(200), nullable=False)
     bucket = db.relationship("Bucket", backref="users", lazy="dynamic",
                              cascade="all, delete-orphan")
+
 
 class Bucket(BaseModel):
     """It creates the buckets table"""
