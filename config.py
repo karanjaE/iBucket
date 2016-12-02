@@ -9,7 +9,7 @@ class Config:
     DEBUG = False
     TESTING = False
     CSRF_ENABLED = True
-    
+
 
 class TestingConf(Config):
     TESTING = True

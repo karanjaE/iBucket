@@ -1,6 +1,3 @@
-from itsdangerous import (TimedJSONWebSignatureSerializer as Serializer,
-                          BadSignature, SignatureExpired)
-
 from app import db
 
 
@@ -31,8 +28,6 @@ class User(BaseModel):
     username = db.Column(db.String(200), nullable=False, unique=True,
                          index=True)
     password = db.Column(db.String(200), nullable=False)
-    first_name = db.Column(db.String(200), nullable=False)
-    last_name = db.Column(db.String(200), nullable=False)
     bucket = db.relationship("Bucket", backref="users", lazy="dynamic",
                              cascade="all, delete-orphan")
 
@@ -58,6 +53,7 @@ class Item(BaseModel):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     item_name = db.Column(db.String(200), nullable=False)
     description = db.Column(db.String(250), nullable=True)
+    done  = db.Column(db.Boolean, nullable=False)
     bucket = db.Column(db.Integer, db.ForeignKey("buckets.id"))
     date_created = db.Column(db.DateTime(), default=db.func.now())
     date_modified = db.Column(db.DateTime(), default=db.func.now(),
