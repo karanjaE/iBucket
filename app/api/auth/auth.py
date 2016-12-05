@@ -1,26 +1,14 @@
 import jwt
+from datetime import datetime
 
-from flask import abort, g, jsonify
-from flask_restful import Resource, reqparse
+from flask import abort, g, jsonify, request
+from flask_restful import marshal_with, Resource, reqparse
 from sqlalchemy.exc import IntegrityError
 
 from app import app, bcrypt, db
-from app.api import serializer
-from app.model.db import User
+from app.api.serializer import bucket_serializer, item_serializer
+from app.model.db import Bucket, Item, User
 
-JWT_SECRET = 'passcode'
-JWT_ALGORITHM = 'HS256'
-
-def verify_user(username, password):
-    user = User.query.filter_by(username=username).first()
-    if user and bcrypt.check_password_hash(user.password, password):
-        g.user_id = user.id
-        return user
-
-def generate_token(user):
-    data = {"user_id": user.id}
-    token = jwt.encode(data, JWT_SECRET, JWT_ALGORITHM)
-    return token
 
 class RegisterUser(Resource):
     """It defines how a user is registered."""
@@ -56,9 +44,9 @@ class LoginUser(Resource):
         args = user_parser.parse_args()
         username = args["username"]
         password = args["password"]
-        user = verify_user(username, password)
+        user = User.verify_user(username, password)
         if not user:
             abort(400, "Username or password are wrong")
-        token = generate_token(user)
+        token = User.generate_token(user)
         return {"message": "Welcome %s" % username,
                 "your token": token.decode("ascii")}
