@@ -1,5 +1,5 @@
 from flask import request
-from flask_jwt import jwt_required
+from flask_jwt import JWT, jwt_required, current_identity
 from flask_restful import abort, Resource
 from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -9,6 +9,7 @@ from app.model.db import User
 from app.api.auth.serializer import UserSerializer
 
 serializer = UserSerializer()
+
 
 def validate_user(username, password):
     """Checks the user's password in the Database and compares it to the one
