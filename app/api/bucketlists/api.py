@@ -73,3 +73,21 @@ class BucketList(Resource):
             return({"message": "Success! Bucket updated"}, 201)
         except Exception:
             return({"Error":"Not updated. Please try again."}, 500)
+
+    def delete(self, id):
+        """Deletes a given bucket"""
+        auth = request.headers.get("access-token")
+        if not auth:
+            return({"error":"Unautorized access. Please log in to continue."},
+                   403)
+        user = actions.verify_auth_token(auth)
+        new_name = request.json.get("bucket_name")
+        bucket = Bucket.query.filter_by(id=id, created_by=user["user_id"]).first()
+        if not bucket:
+            return({"Error": "The ID givne is invalid."})
+        try:
+            db.session.delete(bucket)
+            db.session.commit()
+            return({"Success!": "Deleted"}, 200)
+        except Exception:
+            return({"Error":"Not deleted. Please try again."}, 500)
