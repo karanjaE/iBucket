@@ -28,12 +28,8 @@ class User(BaseModel):
     username = db.Column(db.String(200), nullable=False, unique=True,
                          index=True)
     password = db.Column(db.String(200), nullable=False)
-    logged_in = db.Column(db.Boolean())
     bucket = db.relationship("Bucket", backref="users", lazy="dynamic",
                              cascade="all, delete-orphan")
-
-    def __repr__(self):
-        return str(self.id)
 
 
 class Bucket(BaseModel):

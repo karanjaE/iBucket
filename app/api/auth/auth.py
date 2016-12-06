@@ -1,51 +1,54 @@
-from flask import request
-from flask_jwt import JWT, jwt_required, current_identity
+import os
+
+import jwt
+from flask import abort, request, jsonify, g
 from flask_restful import abort, Resource
-from sqlalchemy.orm.exc import NoResultFound
-from werkzeug.security import generate_password_hash, check_password_hash
 
-from app import db
+from app import app, bcrypt, db
 from app.model.db import User
-from app.api.auth.serializer import UserSerializer
 
-serializer = UserSerializer()
+JWT_PASS = os.environ["SECRET_KEY"]
+JWT_ALGORITHM = "HS256"
 
-
-def validate_user(username, password):
-    """Checks the user's password in the Database and compares it to the one
-    given to validate"""
+def verify_user(username, password):
     user = User.query.filter_by(username=username).first()
-    if user and check_password_hash(user.password, password):
+    if user and bcrypt.check_password_hash(user.password, password):
+        g.user_id = user.id
         return user
 
-def get_user_id(payload):
-    user_id = payload["get_user_id"]
-    return User.query.filter_by(id=user_id).first()
+def gen_auth_token(user):
+    data = {"user_id": user.id}
+    token = jwt.encode(data, JWT_PASS, JWT_ALGORITHM)
+    return token
 
 
 class Register(Resource):
-    """Defines how a user is registered.
-    Username is unique and the password is hashed before being pushed to DB.
-    """
+    """Registers a new user."""
 
     def post(self):
-        data = request.get_json()
-        user_data, errors = serializer.load(data)
-
-        try:
-            password = generate_password_hash(user_data["password"])
-            new_user = User(
-                username=user_data["username"],
-                password=password,
-                logged_in=True
-            )
-            db.session.add(new_user)
-            db.session.commit()
-            return ("Created.", 201)
-        except Exception:
-            abort(500, message="An error occurred. Registration failed.")
-
+        username = request.json.get('username')
+        password = request.json.get('password')
+        if username is None  or password is None:
+            abort(400, message="Username and password cannot be blank.")
+        if User.query.filter_by(username=username).first() is not None:
+            abort(409, message="Username already exists. Pick another.")
+        hash_pass = bcrypt.generate_password_hash(password)
+        user = User(username=username, password=hash_pass)
+        db.session.add(user)
+        db.session.commit()
+        return ("Success! You are regisrered! Please log in.", 201)
 
 class LoginUser(Resource):
-    """Defines how a user gets logged in. """
-    pass
+    """Logs in the user"""
+
+    def post(self):
+        username = request.json.get('username')
+        password = request.json.get('password')
+        if username is None  or password is None:
+            abort(400, message="Username and password cannot be blank.")
+        user = verify_user(username, password)
+        if user:
+            token = gen_auth_token(user)
+            return({"User": user.username, "token": str(token)},200)
+        else:
+            abort(401, message="Wrong username or password.")
