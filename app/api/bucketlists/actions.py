@@ -27,3 +27,7 @@ def create_new_bucket(bucket_name, creator):
     user = User.query.filter_by(id=creator).first()
     bucket = Bucket(bucket_name=bucket_name, created_by=creator).save()
     return bucket
+
+def get_all_buckets(q):
+    buckets = Bucket.query.filter(Bucket.bucket_name.contains(q))
+    return buckets.filter_by(created_by=g.user_id)
