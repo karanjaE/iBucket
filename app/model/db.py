@@ -19,7 +19,6 @@ class BaseModel(db.Model):
         db.session.delete(self)
         db.session.commit()
 
-
 class User(BaseModel):
     """It defines the users table"""
 

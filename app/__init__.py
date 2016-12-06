@@ -22,4 +22,4 @@ from app.api.bucketlists import api
 blist_api.add_resource(auth.Register, "/auth/register")
 blist_api.add_resource(auth.LoginUser, "/auth/login")
 blist_api.add_resource(api.BucketLists, "/bucketlists/")
-blist_api.add_resource(api.BucketList, "/bucketlists/<id>")
+# blist_api.add_resource(api.BucketList, "/bucketlists/<id>")
