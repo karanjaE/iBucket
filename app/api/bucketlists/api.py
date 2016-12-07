@@ -31,6 +31,9 @@ class BucketLists(Resource):
         if not user_id:
             abort(401, message="Invalid user.")
         bucket_name = request.json.get("bucket_name")
+        if (Bucket.query.filter_by(bucket_name=bucket_name).first() is
+            not None):
+            abort(403, message="that name has already been taken.")
         new_bucket = Bucket(bucket_name=bucket_name, created_by=user_id)
         db.session.add(new_bucket)
         db.session.commit()
@@ -58,91 +61,97 @@ class BucketLists(Resource):
         return Response(json.dumps(bucketlists), mimetype='application/json')
 
 
+class BucketList(Resource):
+    """Defines CRUD for a single bucketlist"""
 
-#     def get(self):
-#         """Lists all buckets by a given user."""
-#         page = request.args.get("page", "1")
-#         limit = request.args.get("limit", "100")
-#         q = request.args.get('q', '')
-#         auth = request.headers.get("access-token")
-#         if not auth:
-#             return({"error":"Unautorized access. Please log in to continue."},
-#                    403)
-#         user = actions.verify_auth_token(auth)
-#         buckets = Bucket.query.filter_by(created_by=user["user_id"])
-#         result = bucket_list_json.dump(buckets)
-#         # result = jsonify(result)
-#         return ({"All buckets": type(result)}, 200)
-#
-#
-# class BucketList(Resource):
-#     """Defines CRUD for a single bucketlist"""
-#
-#     def get(self, id):
-#         """Retrieves a single BucketList"""
-#         auth = request.headers.get("access-token")
-#         if not auth:
-#             return({"error":"Unautorized access. Please log in to continue."},
-#                    403)
-#         user = actions.verify_auth_token(auth)
-#         bucket = Bucket.query.filter_by(id=id, created_by=user["user_id"]).first()
-#         items = Item.query.filter_by(bucket=id).all()
-#         bucketlist_items = []
-#         for item in items:
-#             bucketlist_items.append({
-#                 "id": item.id,
-#                 "item_name": item.item_name,
-#                 "description": item.description,
-#                 "date_created": item.date_created,
-#                 "date_modified": item.date_modified,
-#                 "done": item.done
-#             })
-#         bucketlist = {
-#             "id": bucket.id,
-#             "name": bucket.bucket_name,
-#             "owner_id": bucket.created_by,
-#             "items": bucketlist_items,
-#             "date_created": bucket.date_created,
-#             "date_modified": bucket.date_modified
-#         }
-#         return jsonify(bucketlist, 200)
-#
-#
-#
-#     def put(self, id):
-#         """Updates a bucketlist"""
-#         auth = request.headers.get("access-token")
-#         if not auth:
-#             return({"error":"Unautorized access. Please log in to continue."},
-#                    403)
-#         user = actions.verify_auth_token(auth)
-#         new_name = request.json.get("bucket_name")
-#         bucket = Bucket.query.filter_by(id=id, created_by=user["user_id"]).first()
-#         if not bucket:
-#             return({"Error": "The ID givne is invalid."})
-#         try:
-#             bucket.bucket_name = new_name
-#             bucket.date_modified = datetime.utcnow()
-#             db.session.add(bucket)
-#             db.session.commit()
-#             return({"message": "Success! Bucket updated"}, 201)
-#         except Exception:
-#             return({"Error":"Not updated. Please try again."}, 500)
-#
-#     def delete(self, id):
-#         """Deletes a given bucket"""
-#         auth = request.headers.get("access-token")
-#         if not auth:
-#             return({"error":"Unautorized access. Please log in to continue."},
-#                    403)
-#         user = actions.verify_auth_token(auth)
-#         new_name = request.json.get("bucket_name")
-#         bucket = Bucket.query.filter_by(id=id, created_by=user["user_id"]).first()
-#         if not bucket:
-#             return({"Error": "The ID givne is invalid."})
-#         try:
-#             db.session.delete(bucket)
-#             db.session.commit()
-#             return({"Success!": "Deleted"}, 200)
-#         except Exception:
-#             return({"Error":"Not deleted. Please try again."}, 500)
+    def get(self, id):
+        """Retrieves a single BucketList"""
+        auth = request.headers.get("access-token")
+        if not auth:
+            return({"error":"Unautorized access. Please log in to continue."},
+                   403)
+        user = verify_auth_token(auth)
+        bucketlists = Bucket.query.filter_by(id=id, created_by=user["user_id"]).all()
+        items = Item.query.filter_by(bucket=id).all()
+        bucketlist_items = []
+        buckets = []
+        for item in items:
+            bucketlist_items.append({
+                "id": item.id,
+                "item_name": item.item_name,
+                "description": item.description,
+                "date_created": str(item.date_created),
+                "date_modified": str(item.date_modified),
+                "done": item.done
+            })
+        all_items = Response(json.dumps(bucketlist_items), mimetype='application/json')
+        for bucket in bucketlists:
+            buckets.append({
+                "id": bucket.id,
+                "name": bucket.bucket_name,
+                "owner_id": bucket.created_by,
+                "items": bucketlist_items,
+                "date_created": str(bucket.date_created),
+                "date_modified": str(bucket.date_modified)
+            })
+        return Response(json.dumps(buckets), mimetype='application/json')
+
+    def put(self, id):
+        """Updates a bucketlist"""
+        auth = request.headers.get("access-token")
+        if not auth:
+            return({"error":"Unautorized access. Please log in to continue."},
+                   403)
+        user = verify_auth_token(auth)
+        new_name = request.json.get("bucket_name")
+        bucket = Bucket.query.filter_by(id=id, created_by=user["user_id"]).first()
+        if not bucket:
+            return({"Error": "The ID givne is invalid."})
+        try:
+            bucket.bucket_name = new_name
+            bucket.date_modified = datetime.utcnow()
+            db.session.add(bucket)
+            db.session.commit()
+            return({"message": "Success! Bucket updated"}, 201)
+        except Exception:
+            return({"Error":"Not updated. Please try again."}, 500)
+
+    def delete(self, id):
+        """Deletes a given bucket"""
+        auth = request.headers.get("access-token")
+        if not auth:
+            return({"error":"Unautorized access. Please log in to continue."},
+                   403)
+        user = verify_auth_token(auth)
+        bucket = Bucket.query.filter_by(id=id, created_by=user["user_id"]).first()
+        if not bucket:
+            return({"Error": "The ID givne is invalid."})
+        try:
+            db.session.delete(bucket)
+            db.session.commit()
+            return({"Success!": "Deleted"}, 200)
+        except Exception:
+            return({"Error":"Not deleted. Please try again."}, 500)
+
+
+class CreateItems(Resource):
+    """Creates the post method for bucketlist items"""
+
+    def post(self, bucket_id):
+        auth = request.headers.get("access-token")
+        if not auth:
+            return({"error":"Unautorized access. Please log in to continue."},
+                   403)
+        user = verify_auth_token(auth)
+        item_name = request.json.get("name")
+        description = request.json.get("description")
+        done = request.json.get("done", False)
+        if Bucket.query.filter_by(id=bucket_id, created_by=user["user_id"]).first() is None:
+            return({"Error":"The given bucket id is invalid"})
+        if Item.query.filter_by(item_name=item_name).first() is not None:
+            return({"Error": "Item name has already been taken"})
+        new_item = Item(item_name=item_name, bucket=bucket_id, done=done,
+                        description=description)
+        db.session.add(new_item)
+        db.session.commit()
+        return({"Success": "Item created successfully."})
