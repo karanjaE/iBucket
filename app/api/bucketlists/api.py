@@ -155,3 +155,26 @@ class CreateItems(Resource):
         db.session.add(new_item)
         db.session.commit()
         return({"Success": "Item created successfully."})
+
+
+class BucketItems(Resource):
+    """Creates put and delete functionality for bucketlist items"""
+
+    def  put(self, bucket_id, item_id):
+        auth = request.headers.get("access-token")
+        if not auth:
+            return({"error":"Unautorized access. Please log in to continue."},
+                   403)
+        user = verify_auth_token(auth)
+        item = Item.query.filter_by(id=item_id, bucket=bucket_id).first()
+        if not item:
+            return({"Error": "Item ID enter is invalid."})
+        try:
+            item.item_name = request.json.get("name")
+            item.description = request.json.get("description")
+            item.date_modified = datetime.utcnow()
+            db.session.add(item)
+            db.session.commit()
+            return({"Success": "Item updated"}, 201)
+        except Exception:
+            return({"Error":"Not deleted. Please try again."}, 500)
