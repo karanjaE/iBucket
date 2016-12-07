@@ -178,3 +178,19 @@ class BucketItems(Resource):
             return({"Success": "Item updated"}, 201)
         except Exception:
             return({"Error":"Not deleted. Please try again."}, 500)
+
+    def delete(self, bucket_id, item_id):
+        auth = request.headers.get("access-token")
+        if not auth:
+            return({"error":"Unautorized access. Please log in to continue."},
+                   403)
+        user = verify_auth_token(auth)
+        item = Item.query.filter_by(id=item_id, bucket=bucket_id).first()
+        if not item:
+            return({"Error": "Item ID enter is invalid."})
+        try:
+            db.session.delete(item)
+            db.session.commit()
+            return({"Success": "Item deleted."})
+        except Exception:
+            return({"Error":"Not deleted. Please try again."}, 500)
