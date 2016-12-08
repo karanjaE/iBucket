@@ -4,7 +4,7 @@ import os
 
 import jwt
 from flask import Response, abort, request, jsonify, g
-from flask_restful import abort, Resource
+from flask_restful import abort, Resource, reqparse
 
 from app import app, bcrypt, db
 from app.model.db import User, Bucket, Item
@@ -17,9 +17,20 @@ def verify_auth_token(token):
     g.user_id = user.get("user_id", "0")
     return user
 
+def get_buckets(q):
+    bucketlists = Bucket.query.filter(Bucket.bucket_name.contains(q))
+    return bucketlists.filter_by(created_by=g.user_id)
 
 class BucketLists(Resource):
-    """Defines crud for a single bucketlist"""
+    """Defines crud for alll bucketlists"""
+
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument("bucket_name", type=str, required=True)
+        self.parser.add_argument("date_created", type=datetime)
+        self.parser.add_argument("date_modified", type=datetime)
+        self.parser.add_argument("created_by", type=int)
+        super(BucketLists, self).__init__()
 
     def post(self):
         """creates a new bucketlist"""
@@ -31,8 +42,8 @@ class BucketLists(Resource):
         if not user_id:
             abort(401, message="Invalid user.")
         bucket_name = request.json.get("bucket_name")
-        if (Bucket.query.filter_by(bucket_name=bucket_name).first() is
-            not None):
+        if (Bucket.query.filter_by(bucket_name=bucket_name,
+                                   created_by=user_id).first() is not None):
             abort(403, message="that name has already been taken.")
         new_bucket = Bucket(bucket_name=bucket_name, created_by=user_id)
         db.session.add(new_bucket)
@@ -42,23 +53,27 @@ class BucketLists(Resource):
     def get(self):
         """Retrievs all bucketlists"""
         auth = request.headers.get("access-token")
+        q = request.args.get("q", "")
+        page = request.args.get('page', '1')
+        limit = request.args.get('limit', '3')
         if not auth:
             return("Unautorized access. Please log in to continue.", 403)
         user = verify_auth_token(auth)
         user_id = user.get("user_id", None)
         if not user_id:
             abort(401, message="Invalid user.")
-        bucketlists = []
-        buckets = Bucket.query.filter_by(created_by=user_id).all()
-        for bucket in buckets:
-            bucketlists.append({
-                'id': bucket.id,
-                'name': bucket.bucket_name,
-                'created by': bucket.created_by,
-                'date created': str(bucket.date_created),
-                'date modified':  str(bucket.date_modified)
+        all_buckets = get_buckets(q)
+        all_buckets.paginate(int(page), int(limit), True).items
+        buckets = []
+        for bucket in all_buckets:
+            buckets.append({
+                "bucket name": bucket.bucket_name,
+                "created by": bucket.created_by,
+                "id": bucket.id,
+                "date created": str(bucket.date_created),
+                "date_modified": str(bucket.date_modified)
             })
-        return Response(json.dumps(bucketlists), mimetype='application/json')
+        return Response(json.dumps(buckets), mimetype='application/json')
 
 
 class BucketList(Resource):
@@ -72,6 +87,8 @@ class BucketList(Resource):
                    403)
         user = verify_auth_token(auth)
         bucketlists = Bucket.query.filter_by(id=id, created_by=user["user_id"]).all()
+        if not bucketlists:
+            return({"message": "That bucket either doesn't exist or doesn't belong to you."})
         items = Item.query.filter_by(bucket=id).all()
         bucketlist_items = []
         buckets = []
@@ -143,10 +160,11 @@ class CreateItems(Resource):
             return({"error":"Unautorized access. Please log in to continue."},
                    403)
         user = verify_auth_token(auth)
-        item_name = request.json.get("name")
+        item_name = request.json.get("item_name")
         description = request.json.get("description")
         done = request.json.get("done", False)
-        if Bucket.query.filter_by(id=bucket_id, created_by=user["user_id"]).first() is None:
+        if Bucket.query.filter_by(id=bucket_id,
+                                  created_by=user["user_id"]).first() is None:
             return({"Error":"The given bucket id is invalid"})
         if Item.query.filter_by(item_name=item_name).first() is not None:
             return({"Error": "Item name has already been taken"})

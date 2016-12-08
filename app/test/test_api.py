@@ -1,5 +1,5 @@
 from app.test import test_setup
-from app.api import api
+from app.api.bucketlists import api
 
 
 class TestApi(test_setup.TestSetUp):
