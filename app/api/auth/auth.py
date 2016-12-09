@@ -26,7 +26,7 @@ class Register(Resource):
     """Registers a new user."""
 
     def post(self):
-        username = request.json.get('username')
+        username = request.json.get("username")
         password = request.json.get('password')
         if username is None  or password is None:
             abort(400, message="Username and password cannot be blank.")

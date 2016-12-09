@@ -2,27 +2,51 @@ import json
 import os
 
 from faker import Factory
-from flask import Flask
+from flask import jsonify
 from flask_testing import TestCase
+
+from app import app, db, blist_api
+from app.model.db import User, Bucket, Item
+from app.api.auth import auth
+from app.api.bucketlists import api
 
 
 class TestSetUp(TestCase):
 
     def create_app(self):
-        test_app = Flask(__name__)
-        test_app.config["TESTING"] = True
-        return test_app
+        app.config['SQLALCHEMY_DATABASE_URI'] = os.environ["TEST_DB_URL"]
+        return app
 
     def setUp(self):
         """Set up testing environment."""
-        fake = Factory.create()
-        self.username = fake.user_name()
-        self.password = fake.password()
-        self.client.post("/auth/register",
-                         data=json.dumps({"username": self.username,
-                                          "password": self.password}))
-        response = self.client.post("auth/login",
-                                    data=json.dumps({"username": self.username,
-                                                     "password": self.password}))
-        token = os.environ["SECRET_KEY"]
-        self.headers = {"Auth": token}
+        fakes = Factory.create()
+        self.username = fakes.user_name()
+        self.password = fakes.password()
+        bucket_name = fakes.word()
+        item_name = fakes.word()
+        test_app = self.create_app()
+        db.create_all(app=test_app)
+        self.app = test_app.test_client()
+
+        # Create a test user
+        test_user = User(username=self.username, password=self.password)
+        db.session.add(test_user)
+        db.session.commit()
+
+        #test bucket
+        test_bucket = Bucket(bucket_name="Bucket1", created_by=1)
+        test_bucket.save()
+
+        #test item
+        test_item = Item(item_name="Item1", bucket=1, done=False)
+        test_item.save()
+
+        #headers::
+        self.auth_headers = {"access_token": auth.gen_auth_token(test_user)}
+        self.headers = auth.gen_auth_token(test_user)
+
+
+
+    def tearown(self):
+        db.session.remove()
+        db.drop_all()

@@ -1,66 +1,67 @@
-from app import app
+import json
+from flask import jsonify
+from faker import Factory
 from app.test import test_setup
-from app.api import auth
 
 
 class TestUser(test_setup.TestSetUp):
     """Test user creation and login."""
 
-    def test_register(self):
-        response = self.client.post("/auth/register",
-                                    data={"username": self.username,
-                                          "password": self.password})
+    def test_it_creates_a_user(self):
+        fakes = Factory.create()
+        self.username = fakes.user_name()
+        self.password = fakes.password()
+        response = self.app.post("/auth/register",
+                                 content_type="application/json",
+                                 data=json.dumps({"username": self.username,
+                                       "password": self.password}))
         self.assertEqual(response.status_code, 201)
 
-    def test_login(self):
-        response = self.client.post("auth/login",
-                                    data={"username": self.username,
-                                          "password": self.password})
-        self.assertEqual(response.status_code, 200)
-
     def test_reg_fails_if_username_empty(self):
-        response = self.client.post("/auth/register",
-                                    data={"password": self.password})
+        fakes = Factory.create()
+        self.username = fakes.user_name()
+        response = self.app.post("/auth/register",
+                                 content_type="application/json",
+                                 data=json.dumps({"password": self.password}))
         self.assertEqual(response.status_code, 400)
-        self.assertTrue("Username can't be blank." in response.data)
-
-    def test_reg_fails_username_and_password_are_the_same(self):
-        response = self.client.post("/auth/register", data={"username": "foo",
-                                                           "password": "foo"})
-        self.assertEqual(response.status_code, 400)
-        self.assertTrue("Username and password can't be the same."
-                        in response.data)
 
     def test_reg_fails_if_password_empty(self):
-        response = self.client.post("/auth/register",
-                                    data={"username": self.username})
+        fakes = Factory.create()
+        self.username = fakes.user_name()
+        response = self.app.post("/auth/register",
+                                 content_type="application/json",
+                                 data=json.dumps({"username": self.username}))
         self.assertEqual(response.status_code, 400)
-        self.assertTrue("Password cannot be blank!" in response.data)
+
+    def test_reg_fails_if_username_already_exists(self):
+        response = self.app.post("/auth/register",
+                                 content_type="application/json",
+                                 data=json.dumps({"username": self.username,
+                                       "password": self.password}))
+        self.assertEqual(response.status_code, 409)
+
+    def login_succeeds_if_details_are_correct(self):
+        response = self.app.post("/auth/login",
+                                 content_type="application/json",
+                                 data=json.dumps({"username": self.username,
+                                       "password": self.password}))
+        self.assertEqual(response.status_code, 200)
 
     def test_login_fails_if_username_blank(self):
-        response = self.client.post("/auth/login/",
-                                    data={"password": self.password})
+        response = self.app.post("/auth/login",
+                                 content_type="application/json",
+                                 data=json.dumps({"password": self.password}))
         self.assertEqual(response.status_code, 400)
-        self.assertTrue("Username cannot be blank" in response.data)
 
     def test_login_fails_if_password_is_blank(self):
-        # Fails to log in user if the password is blank.
-        response = self.client.post("/auth/login",
-                                    data=({"username": self.username,
-                                                     "password": ""}))
-        self.assertEqual(response.status_code, 204)
-        self.assertIn("Password cannot be blank.", response.data)
+        response = self.app.post("/auth/login",
+                                 content_type="application/json",
+                                 data=json.dumps({"username": self.username}))
+        self.assertEqual(response.status_code, 400)
 
-    def test_login_fails_if_bad_password_is_entered(self):
-        self.client.post("/auth/register",
-                         data={"username": self.username,
-                               "password": self.password})
-        response = self.client.post("auth/login",
-                                    data={"username": self.username,
-                                          "password": "21323pass"})
-        self.assertEqual(response.status_code, 204)
-        self.assertTrue("Wrong password." in response.data)
-
+    def tearown(self):
+        db.session.remove()
+        db.drop_all()
 
 if __name__ == "__main__":
     unittest.main()
