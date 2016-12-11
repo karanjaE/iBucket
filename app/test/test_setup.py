@@ -7,6 +7,7 @@ from flask_testing import TestCase
 
 from app import app, db, blist_api
 from app.model.db import User, Bucket, Item
+
 from app.api.auth import auth
 from app.api.bucketlists import api
 
@@ -19,11 +20,11 @@ class TestSetUp(TestCase):
 
     def setUp(self):
         """Set up testing environment."""
-        fakes = Factory.create()
-        self.username = fakes.user_name()
-        self.password = fakes.password()
-        bucket_name = fakes.word()
-        item_name = fakes.word()
+        self.fakes = Factory.create()
+        self.username = self.fakes.user_name()
+        self.password = self.fakes.password()
+        self.bucket_name = self.fakes.word()
+        self.item_name = self.fakes.word()
         test_app = self.create_app()
         db.create_all(app=test_app)
         self.app = test_app.test_client()
@@ -42,11 +43,5 @@ class TestSetUp(TestCase):
         test_item.save()
 
         #headers::
-        self.auth_headers = {"access_token": auth.gen_auth_token(test_user)}
+        self.auth_headers = {"access-token": auth.gen_auth_token(test_user)}
         self.headers = auth.gen_auth_token(test_user)
-
-
-
-    def tearown(self):
-        db.session.remove()
-        db.drop_all()
