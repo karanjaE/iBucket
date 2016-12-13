@@ -1,3 +1,7 @@
+[![Code Climate](https://codeclimate.com/github/andela-ekaranja/cp2/badges/gpa.svg)](https://codeclimate.com/github/andela-ekaranja/cp2)
+[![Coverage Status](https://coveralls.io/repos/github/andela-ekaranja/cp2/badge.svg?branch=master)](https://coveralls.io/github/andela-ekaranja/cp2?branch=ft-tests)
+[![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/hyperium/hyper/master/LICENSE)
+[![Build Status](https://travis-ci.org/andela-ekaranja/cp2.svg?branch=ft-tests)](https://travis-ci.org/andela-ekaranja/cp2)
 # CP2 BucketList API
 ### Intro:
 This is a RESTful API written using Python's Flask microframework. Its features include CRUD operations for both bucketlists and bucketlist items.  
