@@ -195,7 +195,7 @@ class BucketItems(Resource):
             db.session.commit()
             return({"Success": "Item updated"}, 201)
         except Exception:
-            return({"Error":"Not deleted. Please try again."}, 500)
+            return({"Error":"Not updated. Please try again."}, 500)
 
     def delete(self, bucket_id, item_id):
         auth = request.headers.get("access-token")

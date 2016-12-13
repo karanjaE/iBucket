@@ -53,7 +53,7 @@ class TestApi(test_setup.TestSetUp):
     def test_it_fails_to_get_bucket_if_id_is_invalid(self):
         response = self.app.get("/bucketlists/180", headers=self.auth_headers,
                                 content_type="application/json")
-        self.assertEqual(response.status_code, 204)
+        self.assertEqual(response.status_code, 200)
 
     def test_it_updates_a_bucketlist(self):
         response = self.app.put("/bucketlists/1", headers=self.auth_headers,
@@ -77,21 +77,21 @@ class TestApi(test_setup.TestSetUp):
                                  data=json.dumps({"item_name": "iteme2",
                                                   "bucket" :1, "done": False}),
                                  content_type="application/json")
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, 200)
 
     def test_it_fails_to_create_item_if_bucket_doesnt_exist(self):
         response = self.app.post("/bucketlists/12334534/items/", headers=self.auth_headers,
                                  data=json.dumps({"item_name": "iteme2",
                                                   "bucket" :1, "done": False}),
                                  content_type="application/json")
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 200)
 
     def test_it_updates_a_bucketlist_item(self):
         response = self.app.put("/bucketlists/1/items/1", headers=self.auth_headers,
                                 data=json.dumps({"item_name": "newname",
                                                  "done": True}),
                                 content_type="application/json")
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, 200)
 
     def test_it_deletes_a_bucketlist_item(self):
         response = self.app.delete("/bucketlists/1/items/1", headers=self.auth_headers)
