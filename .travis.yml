@@ -24,3 +24,4 @@ before_install:
 env:
   - SECRET_KEY=secretKey123
   - TEST_DB_URL=test
+  - DB_URL=test
