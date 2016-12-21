@@ -95,21 +95,21 @@ class BucketList(Resource):
         for item in items:
             bucketlist_items.append({
                 "id": item.id,
-                "item_name": item.item_name,
+                "item name": item.item_name,
                 "description": item.description,
-                "date_created": str(item.date_created),
-                "date_modified": str(item.date_modified),
+                "date created": str(item.date_created),
+                "date modified": str(item.date_modified),
                 "done": item.done
             })
         all_items = Response(json.dumps(bucketlist_items), mimetype='application/json')
         for bucket in bucketlists:
             buckets.append({
                 "id": bucket.id,
-                "name": bucket.bucket_name,
-                "owner_id": bucket.created_by,
+                "bucket name": bucket.bucket_name,
+                "owner id": bucket.created_by,
                 "items": bucketlist_items,
-                "date_created": str(bucket.date_created),
-                "date_modified": str(bucket.date_modified)
+                "date created": str(bucket.date_created),
+                "date modified": str(bucket.date_modified)
             })
         return Response(json.dumps(buckets), mimetype='application/json')
 
@@ -123,13 +123,12 @@ class BucketList(Resource):
         new_name = request.json.get("bucket_name")
         bucket = Bucket.query.filter_by(id=id, created_by=user["user_id"]).first()
         if not bucket:
-            return({"Error": "The ID givne is invalid."})
+            return({"Error": "The ID given is invalid."})
         try:
             bucket.bucket_name = new_name
             bucket.date_modified = datetime.utcnow()
-            db.session.add(bucket)
             db.session.commit()
-            return({"message": "Success! Bucket updated"}, 201)
+            return({"message": "Success! Bucket updated"}, 200)
         except Exception:
             return({"Error":"Not updated. Please try again."}, 500)
 
@@ -188,10 +187,9 @@ class BucketItems(Resource):
         if not item:
             return({"Error": "Item ID enter is invalid."})
         try:
-            item.item_name = request.json.get("name")
+            item.item_name = request.json.get("item_name")
             item.description = request.json.get("description")
             item.date_modified = datetime.utcnow()
-            db.session.add(item)
             db.session.commit()
             return({"Success": "Item updated"}, 201)
         except Exception:
