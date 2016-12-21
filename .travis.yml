@@ -11,3 +11,13 @@ script:
   - nosetests
 after_success:
   - coveralls
+# environment variables
+services:
+  - mysql
+
+before_install:
+  - mysql -e 'CREATE DATABASE IF NOT EXISTS test;'
+
+env:
+  - SECRET_KEY=secretKey123
+  - TEST_DB_URL=test
