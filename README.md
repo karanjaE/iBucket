@@ -1,5 +1,5 @@
 [![Code Climate](https://codeclimate.com/github/andela-ekaranja/cp2/badges/gpa.svg)](https://codeclimate.com/github/andela-ekaranja/cp2)
-![coverage](img/cover.svg)
+![coverage](img/cover.png)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/hyperium/hyper/master/LICENSE)
 [![Build Status](https://travis-ci.org/andela-ekaranja/cp2.svg?branch=ft-tests)](https://travis-ci.org/andela-ekaranja/cp2)
 # CP2 BucketList API
