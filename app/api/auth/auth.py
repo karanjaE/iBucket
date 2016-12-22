@@ -19,7 +19,7 @@ def verify_user(username, password):
 def gen_auth_token(user):
     data = {"user_id": user.id}
     token = jwt.encode(data, JWT_PASS, JWT_ALGORITHM)
-    return token
+    return token.decode('utf-8')
 
 
 class Register(Resource):
@@ -49,6 +49,6 @@ class LoginUser(Resource):
         user = verify_user(username, password)
         if user:
             token = gen_auth_token(user)
-            return({"User": user.username, "token": str(token)},200)
+            return({"User": user.username, "token": token},200)
         else:
             abort(401, message="Wrong username or password.")
