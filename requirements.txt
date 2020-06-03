@@ -7,7 +7,7 @@ click==6.6
 coverage==4.2
 coveralls==1.1
 docopt==0.6.2
-fake-factory==0.7.2
+fake-factory==9999.9.9
 Flask==1.0
 Flask-Bcrypt==0.7.1
 Flask-HTTPAuth==3.2.1
